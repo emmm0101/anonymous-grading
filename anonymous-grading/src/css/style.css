@@ -1,0 +1,16 @@
+.Header{
+    display: grid;
+}
+
+.Nav{
+    grid-area: nav;
+    display: grid;
+    /* grid-template-columns: repeat(3, auto); */
+    align-items: center;
+    justify-items: center;
+}
+
+.NavButton{
+    height: 70px;
+    width: 70px;
+}
