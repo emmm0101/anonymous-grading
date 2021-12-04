@@ -1,20 +1,6 @@
 {
     "sqltools.connections": [
         {
-            "mysqlOptions": {
-                "authProtocol": "default"
-            },
-            "previewLimit": 50,
-            "server": "localhost",
-            "port": 3306,
-            "driver": "MySQL",
-            "name": "mindhunter",
-            "group": "mindhunter",
-            "database": "mindhunter",
-            "username": "laura",
-            "password": "Chaelin31"
-        },
-        {
             "previewLimit": 50,
             "driver": "SQLite",
             "name": "mindhunter",
