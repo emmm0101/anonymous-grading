@@ -23,7 +23,7 @@
      
 -- )
 
--- create table member ( 
+-- create table grades_history ( 
 --      userID INTEGER,
 --     deliverableID INTEGER,
 --     grade REAL,
