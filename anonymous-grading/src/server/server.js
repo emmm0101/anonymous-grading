@@ -195,4 +195,73 @@ app.delete('/deleteUser', async (req, res) => {
 	}
 })
 
+app.get('/projects', async (req, res) => {
+    try {
+        let projects = await project.findAll()
+        res.status(200).json(projects)
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+});
+
+
+app.post('/projects', async (req, res) => {
+    try {
+        if (req.query.bulk && req.query.bulk == 'on') {
+            await project.bulkCreate(req.body)
+            res.status(201).json({ message: 'created' })
+        }
+        else {
+            await project.create(req.body)
+            res.status(201).json({ message: 'created' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
+
+app.get('/projectID', async (req, res) => {
+    try {
+        let getProject = await project.findAll({
+                where: {
+                    projectID: 2  //req.params.userID 
+                }
+            })
+        // let getUser = user.findOne({ where: {userID: 3} })
+        if (getProject) {
+            res.status(200).json(getProject)
+        }
+        else {
+            res.status(404).json({ message: 'not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
+
+
+
+app.delete('/deleteProject', async (req, res) => {
+	try{
+		let getProject = await project.findOne({ userID : 5})
+		if (getProject){
+			await getProject.destroy().then(function() {res.status(202).json({message : 'accepted'})})
+            console.log('project deleted');
+		}
+		else{
+			res.status(404).json({message : 'not found'})
+		}
+	}
+	catch(e){
+		console.warn(e)
+		res.status(500).json({message : 'server error'})
+	}
+})
+
 app.listen(8080)
