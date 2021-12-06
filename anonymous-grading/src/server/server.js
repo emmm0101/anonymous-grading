@@ -1,8 +1,8 @@
 const express = require('express')
 const { Sequelize, DataTypes } = require('sequelize');
 const bodyParser = require('body-parser')
-const cors = require('cors');
-const { json } = require('body-parser');
+//const cors = require('cors');
+
 const sequelize = new Sequelize({
     dialect: 'sqlite',
     storage: '../db/mindhunter.db'
@@ -18,9 +18,11 @@ async function test() {
 }
 
 test()
-const project = sequelize.define('project', {
+
+const Project = sequelize.define('project', {
     projectID: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true
     },
     name: Sequelize.TEXT,
@@ -29,9 +31,10 @@ const project = sequelize.define('project', {
     freezeTableName: true
 });
 
-const user = sequelize.define('user', {
+const User = sequelize.define('user', {
     userID: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true
     },
     first_name: Sequelize.TEXT,
@@ -44,10 +47,10 @@ const user = sequelize.define('user', {
     freezeTableName: true
 });
 
-
-const deliverable = sequelize.define('deliverable', {
+const Deliverable = sequelize.define('deliverable', {
     deliverableID: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true
     },
     ddl_date: Sequelize.TEXT,
@@ -56,7 +59,7 @@ const deliverable = sequelize.define('deliverable', {
     freezeTableName: true
 });
 
-const grades_history = sequelize.define('grades_history', {
+const Grades_history = sequelize.define('grades_history', {
     grade: Sequelize.REAL,
     deliverableID: Sequelize.INTEGER,
     userID: Sequelize.INTEGER
@@ -64,69 +67,62 @@ const grades_history = sequelize.define('grades_history', {
     freezeTableName: true
 });
 
-deliverable.hasMany(grades_history, { foreignKey: 'deliverableID' });
-user.belongsToMany(deliverable, { through: 'grades_history' });
-project.hasMany(deliverable, { foreignKey: 'projectID' });
-project.hasMany(user, { foreignKey: 'projectID' });
-
+Deliverable.hasMany(Grades_history, { foreignKey: 'deliverableID' });
+User.belongsToMany(Deliverable, { through: 'grades_history' });
+Project.hasMany(Deliverable, { foreignKey: 'projectID' });
+Project.hasMany(User, { foreignKey: 'projectID' });
 
 async function checkIfExists() {
     try {
-        //await sequelize.drop();
-        //console.log('0 tables')
-        await user.sync();
-        await project.sync();
-        await deliverable.sync();
-        await grades_history.sync();
+        await User.sync({ force: true });
+        await Project.sync({ force: true });
+        await Deliverable.sync({ force: true });
+        await Grades_history.sync({ force: true });
     } catch (error) {
         console.error(error.message)
     }
 }
 
-checkIfExists();
+//checkIfExists();
 
-// async function dropTables(){
-//     try{
-//     await grades_history.drop();
-//     await deliverable.drop();
-//     await user_backup.drop();}catch(error){
-//         console.error(error.message)
-//     }
-// }
+{
+    // async function dropTables(){
+    //     try{
+    //         await grades_history.drop();
+    //         await deliverable.drop();
+    //         await user_backup.drop();}
+    //     catch(error){
+    //         console.error(error.message)
+    //     }
+}
 
 //dropTables();
 
-const sqlSelect = `Select * from user`;
+{//select using QueryTypes
+    // sequelize.query("SELECT * FROM `user`", { type: sequelize.QueryTypes.SELECT})
+    //   .then(function(user) {
+    //     console.log(user)
+    //   })
+}
 
-// user.findAll().then(function (user) {
-//     res.json(user);
-// }).error(function (err) {
-//     console.log("error " + err)
-// })
-
-//select using QueryTypes
-// sequelize.query("SELECT * FROM `user`", { type: sequelize.QueryTypes.SELECT})
-//   .then(function(user) {
-//     console.log(user)
-//   })
-
-//show tables
-sequelize.getQueryInterface().showAllSchemas().then((tableObj) => {
-    console.log('// Tables in database', '==========================');
-    console.log(tableObj);
-}).catch((err) => {
-    console.log('showAllSchemas ERROR', err);
-})
+{
+    //show tables
+    // sequelize.getQueryInterface().showAllSchemas().then((tableObj) => {
+    //     console.log('// Tables in database', '==========================');
+    //     console.log(tableObj);
+    // }).catch((err) => {
+    //     console.log('showAllSchemas ERROR', err);
+    // })
+}
 
 const app = express()
-app.use(cors())
+//app.use(cors())
 app.use(bodyParser.json());
 
-
-
+//user
 app.get('/users', async (req, res) => {
     try {
-        let users = await user.findAll({
+        let users = await User.findAll({
             //attributes: ['userID', 'first_name', 'last_name', 'email', 'password', 'account_type', 'projectID']
         })
         res.status(200).json(users)
@@ -137,15 +133,22 @@ app.get('/users', async (req, res) => {
     }
 });
 
-
 app.post('/users', async (req, res) => {
     try {
+        let account_type = req.body.email.split('@')
+        account_type = account_type[1].split('.') 
+        if(account_type[0] == 'stud')
+        {
+            req.body.account_type = 'Student'
+        } else{
+            req.body.account_type = 'Teacher'
+        }
         if (req.query.bulk && req.query.bulk == 'on') {
-            await user.bulkCreate(req.body)
+            await User.bulkCreate(req.body)
             res.status(201).json({ message: 'created' })
         }
         else {
-            await user.create(req.body)
+            await User.create(req.body)
             res.status(201).json({ message: 'created' })
         }
     }
@@ -155,16 +158,13 @@ app.post('/users', async (req, res) => {
     }
 })
 
-app.get('/usersID', async (req, res) => {
+
+app.get('/users/:id', async (req, res) => {
     try {
-        let getUser = await user.findAll({
-                where: {
-                    userID: 3  //req.params.userID 
-                }
-            })
+        let user = await User.findByPk(req.params.id)
         // let getUser = user.findOne({ where: {userID: 3} })
-        if (getUser) {
-            res.status(200).json(getUser)
+        if (user) {
+            res.status(200).json(user)
         }
         else {
             res.status(404).json({ message: 'not found' })
@@ -176,14 +176,12 @@ app.get('/usersID', async (req, res) => {
     }
 })
 
-
-
-app.delete('/deleteUser', async (req, res) => {
+app.put('/users/:id', async (req, res) => {
 	try{
-		let getUser = await user.findOne({ userID : 5})
-		if (getUser){
-			await getUser.destroy().then(function() {res.status(202).json({message : 'accepted'})})
-            console.log('user deleted');
+		let user = await User.findByPk(req.params.id)
+		if (user){
+			await user.update(req.body)
+			res.status(202).json({message : 'accepted'})
 		}
 		else{
 			res.status(404).json({message : 'not found'})
@@ -195,9 +193,30 @@ app.delete('/deleteUser', async (req, res) => {
 	}
 })
 
+app.delete('/users/:id', async (req, res) => {
+    try {
+        let user = await User.findByPk(req.params.id)
+        //.findOne({ userID: 5 })
+        if (user) {
+            await user.destroy()
+            res.status(202).json({ message: 'accepted' })
+            console.log('user deleted');
+        }
+        else {
+            res.status(404).json({ message: 'not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
+
+//project
 app.get('/projects', async (req, res) => {
     try {
-        let projects = await project.findAll()
+        let projects = await Project.findAll({
+        })
         res.status(200).json(projects)
     }
     catch (e) {
@@ -206,15 +225,14 @@ app.get('/projects', async (req, res) => {
     }
 });
 
-
 app.post('/projects', async (req, res) => {
     try {
         if (req.query.bulk && req.query.bulk == 'on') {
-            await project.bulkCreate(req.body)
+            await Project.bulkCreate(req.body)
             res.status(201).json({ message: 'created' })
         }
         else {
-            await project.create(req.body)
+            await Project.create(req.body)
             res.status(201).json({ message: 'created' })
         }
     }
@@ -224,16 +242,12 @@ app.post('/projects', async (req, res) => {
     }
 })
 
-app.get('/projectID', async (req, res) => {
+app.get('/projects/:id', async (req, res) => {
     try {
-        let getProject = await project.findAll({
-                where: {
-                    projectID: 2  //req.params.userID 
-                }
-            })
+        let project = await Project.findByPk(req.params.id)
         // let getUser = user.findOne({ where: {userID: 3} })
-        if (getProject) {
-            res.status(200).json(getProject)
+        if (project) {
+            res.status(200).json(project)
         }
         else {
             res.status(404).json({ message: 'not found' })
@@ -245,14 +259,12 @@ app.get('/projectID', async (req, res) => {
     }
 })
 
-
-
-app.delete('/deleteProject', async (req, res) => {
+app.put('/projects/:id', async (req, res) => {
 	try{
-		let getProject = await project.findOne({ userID : 5})
-		if (getProject){
-			await getProject.destroy().then(function() {res.status(202).json({message : 'accepted'})})
-            console.log('project deleted');
+		let project = await Project.findByPk(req.params.id)
+		if (project){
+			await project.update(req.body)
+			res.status(202).json({message : 'accepted'})
 		}
 		else{
 			res.status(404).json({message : 'not found'})
@@ -263,5 +275,125 @@ app.delete('/deleteProject', async (req, res) => {
 		res.status(500).json({message : 'server error'})
 	}
 })
+
+app.delete('/projects/:id', async (req, res) => {
+    try {
+        let project = await Project.findByPk(req.params.id)
+        if (project) {
+            await project.destroy()
+            res.status(202).json({ message: 'accepted' })
+            console.log('user deleted');
+        }
+        else {
+            res.status(404).json({ message: 'not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
+
+//deliverable
+app.get('/deliverables', async (req, res) => {
+    try {
+        let deliverables = await Deliverable.findAll()
+        res.status(200).json(deliverables)
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+});
+
+app.post('/deliverables', async (req, res) => {
+    try {
+        if (req.query.bulk && req.query.bulk == 'on') {
+            await Deliverable.bulkCreate(req.body)
+            res.status(201).json({ message: 'created' })
+        }
+        else {
+            await Deliverable.create(req.body)
+            res.status(201).json({ message: 'created' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
+
+app.get('/deliverables/:id', async (req, res) => {
+    try {
+        let deliverable = await Deliverable.findByPk(req.params.id)
+        if (deliverable) {
+            res.status(200).json(deliverable)
+        }
+        else {
+            res.status(404).json({ message: 'not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
+
+app.put('/deliverables/:id', async (req, res) => {
+	try{
+		let deliverable = await Deliverable.findByPk(req.params.id)
+		if (deliverable){
+			await deliverable.update(req.body)
+			res.status(202).json({message : 'accepted'})
+		}
+		else{
+			res.status(404).json({message : 'not found'})
+		}
+	}
+	catch(e){
+		console.warn(e)
+		res.status(500).json({message : 'server error'})
+	}
+})
+
+app.delete('/deliverables/:id', async (req, res) => {
+    try {
+        let deliverable = await Deliverable.findByPk(req.params.id)
+        if (deliverable) {
+            await deliverable.destroy()
+            res.status(202).json({ message: 'accepted' })
+            console.log('deliverable deleted');
+        }
+        else {
+            res.status(404).json({ message: 'not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
+
+app.post('/register', async(req,res)=>{
+
+    //verficare email => setare tip cont
+})
+
+app.get('/login', async(req,res)=>{
+
+})
+
+// inregistrare proiect (carousel) -> post project + deliv -> message in front: completed -> put user
+    //part1
+        // 1. nume proiect
+        // 2. link
+        // 3. introducere coechipieri   
+    //part2
+        // 1. inregistrare deliverables 
+
+// modificare detalii proiect
+    // 1. adaugare link
+    
+
 
 app.listen(8080)
