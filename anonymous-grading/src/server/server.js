@@ -135,6 +135,14 @@ app.get('/users', async (req, res) => {
 
 app.post('/users', async (req, res) => {
     try {
+        let account_type = req.body.email.split('@')
+        account_type = account_type[1].split('.') 
+        if(account_type[0] == 'stud')
+        {
+            req.body.account_type = 'Student'
+        } else{
+            req.body.account_type = 'Teacher'
+        }
         if (req.query.bulk && req.query.bulk == 'on') {
             await User.bulkCreate(req.body)
             res.status(201).json({ message: 'created' })
@@ -149,6 +157,7 @@ app.post('/users', async (req, res) => {
         res.status(500).json({ message: 'server error' })
     }
 })
+
 
 app.get('/users/:id', async (req, res) => {
     try {
@@ -364,6 +373,27 @@ app.delete('/deliverables/:id', async (req, res) => {
         res.status(500).json({ message: 'server error' })
     }
 })
+
+app.post('/register', async(req,res)=>{
+
+    //verficare email => setare tip cont
+})
+
+app.get('/login', async(req,res)=>{
+
+})
+
+// inregistrare proiect (carousel) -> post project + deliv -> message in front: completed -> put user
+    //part1
+        // 1. nume proiect
+        // 2. link
+        // 3. introducere coechipieri   
+    //part2
+        // 1. inregistrare deliverables 
+
+// modificare detalii proiect
+    // 1. adaugare link
+    
 
 
 app.listen(8080)
