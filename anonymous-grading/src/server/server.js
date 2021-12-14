@@ -26,7 +26,7 @@ const Project = sequelize.define('project', {
         primaryKey: true
     },
     name: Sequelize.TEXT,
-    link: Sequelize.TEXT
+    link: Sequelize.TEXT,
 }, {
     freezeTableName: true
 });
@@ -54,7 +54,8 @@ const Deliverable = sequelize.define('deliverable', {
         primaryKey: true
     },
     ddl_date: Sequelize.TEXT,
-    projectID: Sequelize.INTEGER
+    projectID: Sequelize.INTEGER,
+    description: Sequelize.TEXT
 }, {
     freezeTableName: true
 });
@@ -121,6 +122,7 @@ app.use(bodyParser.json());
 
 //user
 app.get('/users', async (req, res) => {
+    console.time('time')
     try {
         let users = await User.findAll({
             //attributes: ['userID', 'first_name', 'last_name', 'email', 'password', 'account_type', 'projectID']
@@ -131,26 +133,20 @@ app.get('/users', async (req, res) => {
         console.warn(e)
         res.status(500).json({ message: 'server error' })
     }
+    console.timeEnd('time')
 });
 
-app.post('/users', async (req, res) => {
+app.post('/registration', async (req, res) => {
     try {
         let account_type = req.body.email.split('@')
-        account_type = account_type[1].split('.') 
-        if(account_type[0] == 'stud')
-        {
+        account_type = account_type[1].split('.')
+        if (account_type[0] == 'stud') {
             req.body.account_type = 'Student'
-        } else{
+        } else {
             req.body.account_type = 'Teacher'
         }
-        if (req.query.bulk && req.query.bulk == 'on') {
-            await User.bulkCreate(req.body)
-            res.status(201).json({ message: 'created' })
-        }
-        else {
-            await User.create(req.body)
-            res.status(201).json({ message: 'created' })
-        }
+        await User.create(req.body)
+        res.status(201).json({ message: 'Registered successfully!' })
     }
     catch (e) {
         console.warn(e)
@@ -177,21 +173,22 @@ app.get('/users/:id', async (req, res) => {
 })
 
 app.put('/users/:id', async (req, res) => {
-	try{
-		let user = await User.findByPk(req.params.id)
-		if (user){
-			await user.update(req.body)
-			res.status(202).json({message : 'accepted'})
-		}
-		else{
-			res.status(404).json({message : 'not found'})
-		}
-	}
-	catch(e){
-		console.warn(e)
-		res.status(500).json({message : 'server error'})
-	}
+    try {
+        let user = await User.findByPk(req.params.id)
+        if (user) {
+            await user.update(req.body)
+            res.status(202).json({ message: 'accepted' })
+        }
+        else {
+            res.status(404).json({ message: 'not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
 })
+
 
 app.delete('/users/:id', async (req, res) => {
     try {
@@ -242,6 +239,7 @@ app.post('/projects', async (req, res) => {
     }
 })
 
+
 app.get('/projects/:id', async (req, res) => {
     try {
         let project = await Project.findByPk(req.params.id)
@@ -260,20 +258,20 @@ app.get('/projects/:id', async (req, res) => {
 })
 
 app.put('/projects/:id', async (req, res) => {
-	try{
-		let project = await Project.findByPk(req.params.id)
-		if (project){
-			await project.update(req.body)
-			res.status(202).json({message : 'accepted'})
-		}
-		else{
-			res.status(404).json({message : 'not found'})
-		}
-	}
-	catch(e){
-		console.warn(e)
-		res.status(500).json({message : 'server error'})
-	}
+    try {
+        let project = await Project.findByPk(req.params.id)
+        if (project) {
+            await project.update(req.body)
+            res.status(202).json({ message: 'accepted' })
+        }
+        else {
+            res.status(404).json({ message: 'not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
 })
 
 app.delete('/projects/:id', async (req, res) => {
@@ -340,20 +338,20 @@ app.get('/deliverables/:id', async (req, res) => {
 })
 
 app.put('/deliverables/:id', async (req, res) => {
-	try{
-		let deliverable = await Deliverable.findByPk(req.params.id)
-		if (deliverable){
-			await deliverable.update(req.body)
-			res.status(202).json({message : 'accepted'})
-		}
-		else{
-			res.status(404).json({message : 'not found'})
-		}
-	}
-	catch(e){
-		console.warn(e)
-		res.status(500).json({message : 'server error'})
-	}
+    try {
+        let deliverable = await Deliverable.findByPk(req.params.id)
+        if (deliverable) {
+            await deliverable.update(req.body)
+            res.status(202).json({ message: 'accepted' })
+        }
+        else {
+            res.status(404).json({ message: 'not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
 })
 
 app.delete('/deliverables/:id', async (req, res) => {
@@ -374,26 +372,91 @@ app.delete('/deliverables/:id', async (req, res) => {
     }
 })
 
-app.post('/register', async(req,res)=>{
+app.post('/register', async (req, res) => {
+    let first_name = req.body.first_name
+    let last_name = req.body.last_name
+    let email = req.body.email
+    let password = req.body.password
 
     //verficare email => setare tip cont
 })
 
-app.get('/login', async(req,res)=>{
+app.post('/login', async (req, res) => {
+    try {
+        let email = req.body.email
+        let password = req.body.password
+        let user = await User.findOne({
+            where: {
+                email: email,
+                // password: password
+            }
+        })
+        if (user && user.password == password) {
+            console.log('login successful');
+            console.log(user);
+            res.status(200).json(user)
+        }
+        else if (user) {
+            res.status(404).json({ msg: 'email and password do not match' })
+        }
+        else {
+            res.status(404).json({ msg: 'user does not exist' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
 
 })
 
 // inregistrare proiect (carousel) -> post project + deliv -> message in front: completed -> put user
-    //part1
-        // 1. nume proiect
-        // 2. link
-        // 3. introducere coechipieri   
-    //part2
-        // 1. inregistrare deliverables 
+//part1
+// 1. nume proiect
+// 2. link
+// 3. introducere coechipieri  // projectId(where name == name) && put(/users/:projectId) { where() }
+//part2
+// 1. inregistrare deliverables 
 
-// modificare detalii proiect
-    // 1. adaugare link
-    
+app.post('/registerProject', async (req, res) => {
+    try {
+        await Project.create(req.body)
+        res.status(201).json({ message: 'created' })
+
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
+
+app.put('/users/project/:projectID', async (req, res) => {
+    let users = req.body
+    console.log(users);
+    try
+    {
+        for (let element of users) {
+            let user = await User.findOne({
+                where: {
+                    first_name: element.first_name,
+                    last_name: element.last_name,
+                }
+            })
+            console.log(user);
+            if (user) {
+                await user.update({ projectID: req.params.projectID })
+                res.status(202).json({ message: 'accepted' })
+            }
+            else {
+                res.status(404).json({ message: 'not found' })
+            }
+        }
+    }
+    catch(e){
+        console.error(e.message);
+    }
+})
+
 
 
 app.listen(8080)
