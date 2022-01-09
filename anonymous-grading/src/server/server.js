@@ -1,7 +1,8 @@
 const express = require('express')
 const { Sequelize, DataTypes } = require('sequelize');
 const bodyParser = require('body-parser')
-//const cors = require('cors');
+const cors = require('cors');
+const path = require('path')
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
@@ -86,7 +87,7 @@ async function checkIfExists() {
 
 //checkIfExists();
 
-{
+//{
     // async function dropTables(){
     //     try{
     //         await grades_history.drop();
@@ -95,18 +96,18 @@ async function checkIfExists() {
     //     catch(error){
     //         console.error(error.message)
     //     }
-}
+//}
 
 //dropTables();
 
-{//select using QueryTypes
+//{//select using QueryTypes
     // sequelize.query("SELECT * FROM `user`", { type: sequelize.QueryTypes.SELECT})
     //   .then(function(user) {
     //     console.log(user)
     //   })
-}
+//}
 
-{
+//{
     //show tables
     // sequelize.getQueryInterface().showAllSchemas().then((tableObj) => {
     //     console.log('// Tables in database', '==========================');
@@ -114,11 +115,12 @@ async function checkIfExists() {
     // }).catch((err) => {
     //     console.log('showAllSchemas ERROR', err);
     // })
-}
+//}
 
 const app = express()
-//app.use(cors())
-app.use(bodyParser.json());
+// app.use(express.static(path.join(_dirname, 'public')))
+app.use(cors()) //node module for allowing data transfer from frontend to backend
+app.use(express.json());
 
 //user
 app.get('/users', async (req, res) => {
@@ -379,6 +381,15 @@ app.post('/register', async (req, res) => {
     let password = req.body.password
 
     //verficare email => setare tip cont
+    // try {
+    //     await Project.create(req.body)
+    //     res.status(201).json({ message: 'created' })
+
+    // }
+    // catch (e) {
+    //     console.warn(e)
+    //     res.status(500).json({ message: 'server error' })
+    // }
 })
 
 app.post('/login', async (req, res) => {
@@ -459,4 +470,4 @@ app.put('/users/project/:projectID', async (req, res) => {
 
 
 
-app.listen(8080)
+app.listen(3001)
