@@ -3,6 +3,8 @@ const { Sequelize, DataTypes } = require('sequelize');
 const bodyParser = require('body-parser')
 const cors = require('cors');
 const path = require('path')
+const { sign } = require('jsonwebtoken')
+const { validateToken } = require('./middlewares/AuthMiddleware')
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
@@ -242,7 +244,7 @@ app.post('/projects', async (req, res) => {
 })
 
 
-app.get('/projects/:id', async (req, res) => {
+app.get('/projects/:id', validateToken, async (req, res) => {
     try {
         let project = await Project.findByPk(req.params.id)
         // let getUser = user.findOne({ where: {userID: 3} })
@@ -405,7 +407,11 @@ app.post('/login', async (req, res) => {
         if (user && user.password == password) {
             console.log('login successful');
             console.log(user);
-            res.status(200).json(user)
+            //res.status(200).json(user)
+
+            const accessToken = sign({first_name: user.first_name, last_name: user.last_name, id: user.userID}, "securedID");
+            console.log(accessToken)
+            res.json(accessToken);
         }
         else if (user) {
             res.status(404).json({ msg: 'email and password do not match' })
