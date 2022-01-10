@@ -1,7 +1,7 @@
 import React from 'react'
 // import ButtonToolbar from 'react-bootstrap/ButtonToolbar'
 // import ButtonGroup from 'react-bootstrap/ButtonGroup'
-import pictures from '../assets/pictures/folder.png';
+import evaluate from '../assets/pictures/evaluate.png';
 import bell from '../assets/pictures/bell.png';
 import login from '../assets/pictures/login.png';
 import home from '../assets/pictures/home.png'
@@ -18,7 +18,7 @@ function Header(){
             </button>
             </Link>
             <button className="NavButton">
-            <img src={pictures} alt="Folder"/>
+            <img src={evaluate} alt="Evaluate" style={{"width": "35px"}}/>
             </button>
             <button className="NavButton">
             <img src={bell} alt="Bell"/>

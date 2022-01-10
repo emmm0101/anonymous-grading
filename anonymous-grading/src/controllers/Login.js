@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import "../App.css";
 import { useSpring, animated } from "react-spring";
 import Axios from 'axios';
+import { AuthContext } from '../components/AuthContextComponent';
+import { Redirect, useHistory} from 'react-router-dom';
+
 
 
 function Login() {
   const [registrationFormStatus, setRegistartionFormStatus] = useState(false);
-  const loginProps = useSpring({ 
+  const loginProps = useSpring({
     left: registrationFormStatus ? -500 : 0, // Login form sliding positions
   });
   const registerProps = useSpring({
@@ -14,7 +17,7 @@ function Login() {
   });
 
   const loginBtnProps = useSpring({
-    borderBottom: registrationFormStatus 
+    borderBottom: registrationFormStatus
       ? "solid 0px transparent"
       : "solid 2px #1059FF",  //Animate bottom border of login button
   });
@@ -65,68 +68,85 @@ function Login() {
 }
 
 function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const {setAuthState} = useContext(AuthContext);
+  let history = useHistory();
+  const login = () => {
+    Axios.post('http://localhost:3001/login', {
+      email: email,
+      password: password
+    }).then((response) => {
+      console.log('Registration' + response)
+      if(response.data.error) console.log(response.data.error)
+      sessionStorage.setItem("accessToken", response.data);
+      setAuthState(true);
+      alert('conn true')
+        history.push('/home');
+    })
+  }
   return (
     <React.Fragment>
-      <label htmlFor="username">USERNAME</label>
-      <input type="text" id="username" />
+      <label htmlFor="username">EMAIL</label>
+      <input type="text" id="username" onChange={(e) => {
+        setEmail(e.target.value);
+      }}/>
       <label htmlFor="password">PASSWORD</label>
-      <input type="text" id="password" />
-      <input type="submit" value="submit" className="submit" />
+      <input type="password" id="password" onChange={(e) => {
+        setPassword(e.target.value);
+      }}/>
+      <input type="submit" value="submit" className="submit"  onClick={login}/>
     </React.Fragment>
   );
 }
 
 function RegisterForm() {
 
-    const [firstnameReg, setfirstnameReg] = useState('');
-    const [lastnameReg, setlastnameReg] = useState('');
-    const [emailReg, setEmailReg] = useState('');
-    const [passwordReg, setPasswordReg] = useState('');
+  const [firstnameReg, setfirstnameReg] = useState('');
+  const [lastnameReg, setlastnameReg] = useState('');
+  const [emailReg, setEmailReg] = useState('');
+  const [passwordReg, setPasswordReg] = useState('');
 
+  // React.useEffect(() => {
+  //   Axios.get('http://localhost:3001/users').then((res) => {
+  //     console.log(res.data)
+  //    // alert(res.data);
+  //   }).catch(err => console.log(err));
+  // }, []);
 
-    const submitRegistration = () => {
-        Axios.post('http://localhost8080/registration', {
-            first_name: firstnameReg, 
-            last_name: lastnameReg, 
-            email: emailReg, 
-            password: passwordReg
-        }).then((response) => {
-            console.log('Registration' + response)
-            console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaA')
-        })
-    }
+  const submitRegistration = () => {
+    Axios.post('http://localhost:3001/registration', {
+      first_name: firstnameReg,
+      last_name: lastnameReg,
+      email: emailReg,
+      password: passwordReg
+    }).then((response) => {
+      //alert('successful insert')
+      console.log('Registration' + response)
+    })
+  }
 
-    const getUsers = async () => {
-        let users = await Axios.get('http://localhost8080/users').then((res) =>{
-            console.log(res);
-        }).catch(err => console.error(err))
-        console.log(users.length)
-        console.log(users);
-    }
 
   return (
     <React.Fragment>
-        
+
       <label htmlFor="firstName">first name</label>
       <input type="text" id="firstname" onChange={(e) => {
-          setfirstnameReg(e.target.value);
-      }}/>
+        setfirstnameReg(e.target.value);
+      }} />
       <label htmlFor="lastName">last name</label>
       <input type="text" id="fullname" onChange={(e) => {
-          setlastnameReg(e.target.value);
-      }}/>
+        setlastnameReg(e.target.value);
+      }} />
       <label htmlFor="email">email</label>
       <input type="text" id="email" onChange={(e) => {
-          setEmailReg(e.target.value);
-      }}/>
+        setEmailReg(e.target.value);
+      }} />
       <label htmlFor="password">password</label>
-      <input type="text" id="password" onChange={(e) => {
-          setPasswordReg(e.target.value);
-      }}/>
-      {/* <label for="confirmpassword">confirm password</label>
-      <input type="text" id="confirmpassword" value={values.password} onChange={handleChangeOnRegistration}/> */}
-      {/* <button onClick={getUsers} style={{"color":"black"}}></button> */}
-      <input type="submit" value="submit" className="submit" onClick={getUsers}/>
+      <input type="password" id="password" onChange={(e) => {
+        setPasswordReg(e.target.value);
+      }} />
+      <input type="submit" value="submit" className="submit" onClick={submitRegistration} />
     </React.Fragment>
   );
 }
