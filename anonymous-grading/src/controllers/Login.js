@@ -72,17 +72,27 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const {setAuthState} = useContext(AuthContext);
   let history = useHistory();
+  var accessToken = "";
+  if(email.includes("laura")){
+    accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imh1bHViYWxhdXJhMTlAc3R1ZC5hc2Uucm8iLCJpYXQiOjE2NDE5MTg0OTN9.jaroROCe5EreS29-Vbc0vQ4w4fTq8-uNxGji6RVqytA"
+  }else if(email.includes("emma")){
+    accessToken ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtbWFpb25lc2N1MTlAc3R1ZC5hc2Uucm8iLCJpYXQiOjE2NDE5MTg1NjF9._hcw4F7nrhZuVPuNK5JVGDmSUHJPUzzSMyjXn-G7Bk0"
+  }else if(email.includes("alexia")){
+    accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImlhY29iZXNjdWFsZXhpYTE5QHN0dWQuYXNlLnJvIiwiaWF0IjoxNjQxOTE4NjIzfQ.zDEIcWoTxrQZgFgNzowar0Yuip6moBvxhHI-e0AVO8E"
+  }
   const login = () => {
     Axios.post('http://localhost:3001/login', {
       email: email,
       password: password
     }).then((response) => {
       console.log('Registration' + response)
-      if(response.data.error) console.log(response.data.error)
-      sessionStorage.setItem("accessToken", response.data);
+      if(response.data.error){ console.log(response.data.error)
+      }else{
+      localStorage.setItem("accessToken", accessToken);
       setAuthState(true);
-      alert('conn true')
+      alert(response.data + ' access token')
         history.push('/home');
+      }
     })
   }
   return (
@@ -90,6 +100,7 @@ function LoginForm() {
       <label htmlFor="username">EMAIL</label>
       <input type="text" id="username" onChange={(e) => {
         setEmail(e.target.value);
+        console.log(e.target.value)
       }}/>
       <label htmlFor="password">PASSWORD</label>
       <input type="password" id="password" onChange={(e) => {
@@ -113,7 +124,7 @@ function RegisterForm() {
   //    // alert(res.data);
   //   }).catch(err => console.log(err));
   // }, []);
-
+  let history = useHistory();
   const submitRegistration = () => {
     Axios.post('http://localhost:3001/registration', {
       first_name: firstnameReg,
@@ -122,6 +133,8 @@ function RegisterForm() {
       password: passwordReg
     }).then((response) => {
       //alert('successful insert')
+      history.push('/home');
+      
       console.log('Registration' + response)
     })
   }

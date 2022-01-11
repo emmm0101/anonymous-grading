@@ -150,7 +150,11 @@ app.post('/registration', async (req, res) => {
             req.body.account_type = 'Teacher'
         }
         await User.create(req.body)
+        const accessToken = sign({email: req.body.email}, "securedID");
+        console.log(accessToken)
+        res.json({ token: accessToken, email: req.body.email, });
         res.status(201).json({ message: 'Registered successfully!' })
+        res.send(accessToken);
     }
     catch (e) {
         console.warn(e)
@@ -409,9 +413,9 @@ app.post('/login', async (req, res) => {
             console.log(user);
             //res.status(200).json(user)
 
-            const accessToken = sign({first_name: user.first_name, last_name: user.last_name, id: user.userID}, "securedID");
+            const accessToken = sign({email: user.email}, "securedID");
             console.log(accessToken)
-            res.json(accessToken);
+            res.json({ token: accessToken, email: email});
         }
         else if (user) {
             res.status(404).json({ msg: 'email and password do not match' })
@@ -434,6 +438,12 @@ app.post('/login', async (req, res) => {
 // 3. introducere coechipieri  // projectId(where name == name) && put(/users/:projectId) { where() }
 //part2
 // 1. inregistrare deliverables 
+
+
+app.get("/auth", validateToken, (req, res) => {
+    res.json('user has been authentificated');
+   //console.log(req.user)
+  });
 
 app.post('/registerProject', async (req, res) => {
     try {
