@@ -405,13 +405,11 @@ app.post('/login', async (req, res) => {
         let user = await User.findOne({
             where: {
                 email: email,
-                // password: password
             }
         })
         if (user && user.password == password) {
             console.log('login successful');
             console.log(user);
-            //res.status(200).json(user)
 
             const accessToken = sign({email: user.email}, "securedID");
             console.log(accessToken)

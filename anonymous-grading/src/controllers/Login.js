@@ -72,27 +72,33 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const {setAuthState} = useContext(AuthContext);
   let history = useHistory();
-  var accessToken = "";
-  if(email.includes("laura")){
-    accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imh1bHViYWxhdXJhMTlAc3R1ZC5hc2Uucm8iLCJpYXQiOjE2NDE5MTg0OTN9.jaroROCe5EreS29-Vbc0vQ4w4fTq8-uNxGji6RVqytA"
-  }else if(email.includes("emma")){
-    accessToken ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtbWFpb25lc2N1MTlAc3R1ZC5hc2Uucm8iLCJpYXQiOjE2NDE5MTg1NjF9._hcw4F7nrhZuVPuNK5JVGDmSUHJPUzzSMyjXn-G7Bk0"
-  }else if(email.includes("alexia")){
-    accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImlhY29iZXNjdWFsZXhpYTE5QHN0dWQuYXNlLnJvIiwiaWF0IjoxNjQxOTE4NjIzfQ.zDEIcWoTxrQZgFgNzowar0Yuip6moBvxhHI-e0AVO8E"
-  }
-  const login = () => {
-    Axios.post('http://localhost:3001/login', {
+
+  const login = e => {
+    e.preventDefault();
+    console.log('checked');
+    const data = {
       email: email,
       password: password
-    }).then((response) => {
-      console.log('Registration' + response)
-      if(response.data.error){ console.log(response.data.error)
-      }else{
-      localStorage.setItem("accessToken", accessToken);
-      setAuthState(true);
-      alert(response.data + ' access token')
-        history.push('/home');
-      }
+    }
+    // Axios.post('http://localhost:3001/login', {
+    //   email: email,
+    //   password: password
+    // }).then((response) => {
+    //   console.log('Registration' + response)
+    //   if(response.data.error){ console.log(response.data.error)
+    //   }else{
+    //   localStorage.setItem("accessToken", response.data.accessToken);
+    //   setAuthState(true);
+    //   alert(response.data + ' access token')
+    //     history.push('/home');
+    //   }
+    // })
+    Axios.post('http://localhost:3001/login', data).then(res => {
+      console.log(res);
+      localStorage.setItem("accessToken", res.data.token);
+      history.push('/home');
+    }).catch(err => {
+      console.log(err)
     })
   }
   return (
@@ -125,18 +131,22 @@ function RegisterForm() {
   //   }).catch(err => console.log(err));
   // }, []);
   let history = useHistory();
-  const submitRegistration = () => {
-    Axios.post('http://localhost:3001/registration', {
+  const submitRegistration = (e) => {
+    e.preventDefault();
+    const data = {
       first_name: firstnameReg,
       last_name: lastnameReg,
       email: emailReg,
       password: passwordReg
-    }).then((response) => {
+    }
+    console.log('submitButton')
+    Axios.post('http://localhost:3001/registration', data).then((response) => {
       //alert('successful insert')
+      console.log(response)
       history.push('/home');
       
       console.log('Registration' + response)
-    })
+    }).catch(err => console.log(err))
   }
 
 
