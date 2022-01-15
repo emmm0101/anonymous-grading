@@ -68,9 +68,6 @@ function Home(){
         setTeammate1(response.data[0])
         setTeammate2(response.data[1])
         setTeammate3(response.data[2])
-        // setHasProject(true);
-        // setProjectLink(response.data.link);
-        // setProjectName(response.data.name);
         
       }
     });
