@@ -80,22 +80,12 @@ function LoginForm() {
       email: email,
       password: password
     }
-    // Axios.post('http://localhost:3001/login', {
-    //   email: email,
-    //   password: password
-    // }).then((response) => {
-    //   console.log('Registration' + response)
-    //   if(response.data.error){ console.log(response.data.error)
-    //   }else{
-    //   localStorage.setItem("accessToken", response.data.accessToken);
-    //   setAuthState(true);
-    //   alert(response.data + ' access token')
-    //     history.push('/home');
-    //   }
-    // })
+
     Axios.post('http://localhost:3001/login', data).then(res => {
       console.log(res);
       localStorage.setItem("accessToken", res.data.token);
+      localStorage.setItem("email", res.data.email);
+      localStorage.setItem("userID", res.data.userID);
       history.push('/home');
     }).catch(err => {
       console.log(err)
