@@ -44,9 +44,81 @@
 .Nav{
   grid-area: nav;
   display: flex;
-  grid-template-columns: repeat(4, auto); 
+  grid-template-columns: repeat(6, auto); 
   align-items: center;
   justify-items: center;
+}
+
+.Nav2{
+  grid-area: nav;
+  display: flex;
+  grid-template-columns: repeat(2, auto); 
+  align-items: center;
+  justify-items: center;
+}
+
+.splitLeft {
+  height: 85%;
+  width: 60%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  overflow-x: hidden;
+  margin-top:150px;
+}
+.splitRight {
+  height: 85%;
+  width: 40%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  overflow-x: hidden;
+  margin-top:150px;
+}
+
+.projectTitle{
+  font-weight: bold;
+  font-size: 30px;
+}
+
+.githubButton{
+  background-color: darksalmon;
+  color: rgb(22, 10, 10);
+  padding: 5px 15px;
+  border-radius: 5px;
+  outline: 0;
+  text-transform: uppercase;
+  margin: 10px 0px;
+  cursor: pointer;
+  box-shadow: 0px 2px 2px lightgray;
+  transition: ease background-color 250ms;
+}
+
+.githubButton :hover{
+  background-color: rgb(53, 27, 19);
+}
+
+.left {
+  left: 0;
+  background-color: rgb(207, 129, 129);
+}
+
+.right {
+  right: 0;
+}
+
+.centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.centered img {
+  width: 450px;
+  height:450px;
+  /* border-radius: 50%; */
 }
 
 .NavButton{

@@ -386,16 +386,6 @@ app.post('/register', async (req, res) => {
     let email = req.body.email
     let password = req.body.password
 
-    //verficare email => setare tip cont
-    // try {
-    //     await Project.create(req.body)
-    //     res.status(201).json({ message: 'created' })
-
-    // }
-    // catch (e) {
-    //     console.warn(e)
-    //     res.status(500).json({ message: 'server error' })
-    // }
 })
 
 app.post('/login', async (req, res) => {
@@ -413,7 +403,7 @@ app.post('/login', async (req, res) => {
 
             const accessToken = sign({email: user.email}, "securedID");
             console.log(accessToken)
-            res.json({ token: accessToken, email: email});
+            res.json({ token: accessToken, email: email, userID: user.userID});
         }
         else if (user) {
             res.status(404).json({ msg: 'email and password do not match' })
@@ -429,14 +419,6 @@ app.post('/login', async (req, res) => {
 
 })
 
-// inregistrare proiect (carousel) -> post project + deliv -> message in front: completed -> put user
-//part1
-// 1. nume proiect
-// 2. link
-// 3. introducere coechipieri  // projectId(where name == name) && put(/users/:projectId) { where() }
-//part2
-// 1. inregistrare deliverables 
-
 
 app.get("/auth", validateToken, (req, res) => {
     res.json('user has been authentificated');
@@ -445,8 +427,8 @@ app.get("/auth", validateToken, (req, res) => {
 
 app.post('/registerProject', async (req, res) => {
     try {
-        await Project.create(req.body)
-        res.status(201).json({ message: 'created' })
+       const project = await Project.create(req.body)
+        res.status(201).json({ message: 'created', projectID: project.projectID })
 
     }
     catch (e) {
@@ -456,32 +438,117 @@ app.post('/registerProject', async (req, res) => {
 })
 
 app.put('/users/project/:projectID', async (req, res) => {
-    let users = req.body
-    console.log(users);
-    try
-    {
-        for (let element of users) {
-            let user = await User.findOne({
+    let data = req.body
+    console.log(data)
+    try{
+            let user1 = await User.findOne({
                 where: {
-                    first_name: element.first_name,
-                    last_name: element.last_name,
+                    email: data.user_1
                 }
             })
-            console.log(user);
-            if (user) {
-                await user.update({ projectID: req.params.projectID })
+            console.log(user1);
+            if (user1) {
+                await user1.update({ projectID: data.projectID })
                 res.status(202).json({ message: 'accepted' })
             }
             else {
-                res.status(404).json({ message: 'not found' })
+                res.status(404).json({ message: 'user 1 not found' })
             }
-        }
+        }catch(e){
+            console.error(e.message);
     }
-    catch(e){
+
+    try{
+        let user2 = await User.findOne({
+            where: {
+                email: data.user_2
+            }
+        })
+        console.log(user2);
+        if (user2) {
+            await user2.update({ projectID: data.projectID })
+            res.status(202).json({ message: 'accepted' })
+        }
+        else {
+            res.status(404).json({ message: 'user 2 not found' })
+        }
+    }catch(e){
+        console.error(e.message);
+    }
+
+    try{
+        let user3 = await User.findOne({
+            where: {
+                email: data.user_3
+            }
+        })
+        console.log(user3);
+        if (user3) {
+            await user3.update({ projectID: data.projectID })
+            res.status(202).json({ message: 'accepted' })
+        }
+        else {
+            res.status(404).json({ message: 'user 3 not found' })
+        }
+    }catch(e){
         console.error(e.message);
     }
 })
 
+app.post('/registerDeliverables', async (req, res) => {
+    let deliverables = req.body;
+    try
+    {
+        for (var i = 0; i <3 ;i++) {
+            await Deliverable.create(deliverables[i])
+            res.status(201).json({ message: 'deliverable created' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
 
+app.get('/user/project/:id', async (req, res) => {
+    const id = req.header("userID")
+    try {
+        console.log("id " + id)
+        let user = await User.findOne({
+            where: {
+                userID: id
+            }
+        })
+        let project = await Project.findOne({
+            where: {
+                projectID: user.projectID
+            }
+        })
+        console.log(user)
+        if (project) {
+            res.status(200).json(project)
+        }
+        else {
+            res.status(404).json({ message: 'project not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
 
+app.get('/teammates', async (req, res) => {
+    const id = req.header("projectID")
+    try {
+        let users = await User.findAll({where: {
+            projectID: id
+        }})
+        res.status(200).json(users)
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+});
 app.listen(3001)
