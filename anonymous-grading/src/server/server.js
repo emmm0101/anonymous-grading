@@ -330,8 +330,14 @@ app.post('/deliverables', async (req, res) => {
 })
 
 app.get('/deliverables/:id', async (req, res) => {
+    const id = req.header("deliverableID")
     try {
-        let deliverable = await Deliverable.findByPk(req.params.id)
+        console.log(id)
+        let deliverable = await Deliverable.findOne({
+            where: {
+                deliverableID: id
+            }
+        })
         if (deliverable) {
             res.status(200).json(deliverable)
         }
@@ -551,4 +557,62 @@ app.get('/teammates', async (req, res) => {
         res.status(500).json({ message: 'server error' })
     }
 });
+
+app.get('/usersDeliverables', async (req, res) => {
+    const id = req.header("projectID")
+    try {
+        let deliverables = await Deliverable.findAll({where: {
+            projectID: id
+        }})
+        res.status(200).json(deliverables)
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+});
+
+app.get('/evaluateProject', async (req, res) => {
+    const id = req.header("deliverableID")
+    try {
+        console.log(id)
+        let deliverable = await Deliverable.findOne({
+            where: {
+                deliverableID: id
+            }
+        })
+        if (deliverable) {
+            let project = await Project.findOne({
+                where: {
+                    projectID: deliverable.projectID
+                }
+            })
+            let dataToSend = [];
+            dataToSend.push(deliverable);
+            dataToSend.push(project);
+            res.status(200).json(dataToSend)
+        }
+        else {
+            res.status(404).json({ message: 'not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
+
+app.post('/assignRandomEvaluator', async (req, res) => {
+    try {
+        console.log(req.body)
+       const grade_history = await Grades_history.create(req.body)
+        res.status(201).json({ message: 'created', deliverableID: grade_history.deliverableID })
+
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+});
+
 app.listen(3001)
