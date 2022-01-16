@@ -1,9 +1,8 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import "../App.css";
 import { useSpring, animated } from "react-spring";
 import Axios from 'axios';
-import { AuthContext } from '../components/AuthContextComponent';
-import { Redirect, useHistory} from 'react-router-dom';
+import { useHistory} from 'react-router-dom';
 
 
 
@@ -19,11 +18,11 @@ function Login() {
   const loginBtnProps = useSpring({
     borderBottom: registrationFormStatus
       ? "solid 0px transparent"
-      : "solid 2px #1059FF",  //Animate bottom border of login button
+      : "solid 2px #DF5E5E",  //Animate bottom border of login button
   });
   const registerBtnProps = useSpring({
     borderBottom: registrationFormStatus
-      ? "solid 2px #1059FF"
+      ? "solid 2px #DF5E5E"
       : "solid 0px transparent", //Animate bottom border of register button
   });
 
@@ -35,6 +34,7 @@ function Login() {
   }
 
   return (
+    <div className="divLogin">
     <div className="login-register-wrapper">
       <div className="nav-buttons">
         <animated.button
@@ -64,13 +64,13 @@ function Login() {
         <a herf="#">Forgot your password</a>
       </animated.div> */}
     </div>
+    </div>
   );
 }
 
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const {setAuthState} = useContext(AuthContext);
   let history = useHistory();
 
   const login = e => {
@@ -90,6 +90,9 @@ function LoginForm() {
     }).catch(err => {
       console.log(err)
     })
+
+
+
   }
   return (
     <React.Fragment>
