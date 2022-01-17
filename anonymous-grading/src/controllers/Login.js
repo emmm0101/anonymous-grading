@@ -86,6 +86,7 @@ function LoginForm() {
       localStorage.setItem("accessToken", res.data.token);
       localStorage.setItem("email", res.data.email);
       localStorage.setItem("userID", res.data.userID);
+      localStorage.setItem("account_type", res.data.account_type);
       history.push('/home');
     }).catch(err => {
       console.log(err)
@@ -117,12 +118,6 @@ function RegisterForm() {
   const [emailReg, setEmailReg] = useState('');
   const [passwordReg, setPasswordReg] = useState('');
 
-  // React.useEffect(() => {
-  //   Axios.get('http://localhost:3001/users').then((res) => {
-  //     console.log(res.data)
-  //    // alert(res.data);
-  //   }).catch(err => console.log(err));
-  // }, []);
   let history = useHistory();
   const submitRegistration = (e) => {
     e.preventDefault();
@@ -134,9 +129,8 @@ function RegisterForm() {
     }
     console.log('submitButton')
     Axios.post('http://localhost:3001/registration', data).then((response) => {
-      //alert('successful insert')
       console.log(response)
-      history.push('/home');
+      history.push('/login');
       
       console.log('Registration' + response)
     }).catch(err => console.log(err))

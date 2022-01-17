@@ -3,14 +3,59 @@ import axios from 'axios';
 import happyStudents from '../assets/pictures/happyStudents.png';
 import evaluate2 from '../assets/pictures/evaluate2.png';
 import Rating from '@mui/material/Rating';
+import StarIcon from '@mui/icons-material/Star';
 import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 function EvaluateProject(){
     const [projectChecked, setprojectChecked] = useState(false);
     const [deliverable, setDeliverable] = useState('');
     const [project, setProject] = useState('');
 
-    const [value, setValue] = React.useState(2);
+    const [value, setValue] = React.useState(0);
+    const [hover, setHover] = React.useState(-1);
+
+    const labels = {
+      0.5: '2',
+      1: '2.5',
+      1.5: '3',
+      2: '4',
+      2.5: '5',
+      3: '6',
+      3.5: '7',
+      4: '8',
+      4.5: '9',
+      5: '10',
+    };
+
+    const data = {
+      deliverableID: localStorage.getItem("deliverableID"),
+      grade: value
+    }
+
+    const sendGrade = () => {
+      axios.put("http://localhost:3001/updateGrade", data).then((response) => {
+        if (response.data.error) {
+          console.log(response.data.error)
+        } else {
+          console.log(response.data)
+        }
+      });
+
+        const data2 = {
+          projectToEvaluate: localStorage.getItem("projectToEvaluate"),
+          deliverableID: localStorage.getItem("deliverableID")
+        }
+
+        console.log(data2)
+        axios.put("http://localhost:3001/updateProjectID", data2).then((response) => {
+          if (response.data.error) {
+            console.log(false)
+          } else {
+            console.log(response.data)
+          }
+        });
+    }
 
 
     if(projectChecked == false){
@@ -22,7 +67,7 @@ function EvaluateProject(){
           if (response.data.error) {
             console.log(response.data.error)
           } else {
-            console.log(response.data)
+            //console.log(response.data)
             setprojectChecked(true);
             setDeliverable(response.data[0]);
             setProject(response.data[1]);
@@ -59,12 +104,28 @@ function EvaluateProject(){
            </div>
        </div>
        <Typography component="legend">Rate the project</Typography>
-      <Rating
+      {/* <Rating
         name="simple-controlled"
         onChange={(event, newValue) => {
           setValue(newValue);
         }}
+      /> */}
+       <Rating
+        name="hover-feedback"
+        value={value}
+        precision={0.5}
+        onChange={(event, newValue) => {
+          setValue(newValue);
+          sendGrade()
+        }}
+        onChangeActive={(event, newHover) => {
+          setHover(newHover);
+        }}
+        emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
       />
+            {value !== null && (
+        <Box sx={{ ml: 2 }}>{labels[hover !== -1 ? hover : value]}</Box>
+      )}
    </div>
        </div>
      </div>

@@ -59,6 +59,10 @@ function Header() {
     localStorage.removeItem("userID");
     localStorage.removeItem("email");
     localStorage.removeItem("projectID");
+    localStorage.removeItem("account_type");
+    localStorage.removeItem("projectToEvaluate");
+    localStorage.removeItem("deliverableID");
+
     setAuthState(false);
     history.push('/login');
   }
@@ -162,6 +166,7 @@ function Header() {
   const [openPopover, setOpenPopover] = useState(false);
   const [deliverableID, setDeliverableID] = useState(false);
 
+
   const onOpenPopover = () => {
     const userID = localStorage.getItem("userID")
     const randomNumber = Math.floor(Math.random() * (11 - 6) + 6);
@@ -181,7 +186,21 @@ function Header() {
       setDeliverableID(res.data.deliverableID);
     }).catch(err => {
       console.log(err)
-    })
+    });
+
+    axios.get("http://localhost:3001/getProjectIdFromDeliverable", {
+      headers: {
+        deliverableID: localStorage.getItem("deliverableID"),
+      },
+    }).then((response) => {
+      if (response.data.error) {
+        console.log(false)
+      } else {
+        localStorage.setItem("projectToEvaluate", response.data.projectID)
+      }
+    });
+
+
     setOpenPopover(true);
   }
 
@@ -225,9 +244,9 @@ function Header() {
               </ListItemButton>
             </List>
             <Link to='/evaluateProject'>
-            <Button type="submit" onClick={() => setOpenPopover(false)} style={{ "color": "black" }}>
-              <label style={{ "color": "black", "fontSize": "12px" }}>Select</label></Button>
-              </Link>
+              <Button type="submit" onClick={() => setOpenPopover(false)} style={{ "color": "black" }}>
+                <label style={{ "color": "black", "fontSize": "12px" }}>Select</label></Button>
+            </Link>
             <Button type="submit" onClick={() => onPopoverSelect()} style={{ "color": "black" }}>
               <label style={{ "color": "black", "fontSize": "12px" }}>Close</label></Button>
 
