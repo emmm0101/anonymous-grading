@@ -66,9 +66,12 @@ const Deliverable = sequelize.define('deliverable', {
 const Grades_history = sequelize.define('grades_history', {
     grade: Sequelize.REAL,
     deliverableID: Sequelize.INTEGER,
-    userID: Sequelize.INTEGER
+    userID: Sequelize.INTEGER,
+    projectID: Sequelize.INTEGER
 }, {
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false,
+    createdAt: false,
 });
 
 Deliverable.hasMany(Grades_history, { foreignKey: 'deliverableID' });
@@ -78,9 +81,6 @@ Project.hasMany(User, { foreignKey: 'projectID' });
 
 async function checkIfExists() {
     try {
-        await User.sync({ force: true });
-        await Project.sync({ force: true });
-        await Deliverable.sync({ force: true });
         await Grades_history.sync({ force: true });
     } catch (error) {
         console.error(error.message)
@@ -351,6 +351,28 @@ app.get('/deliverables/:id', async (req, res) => {
     }
 })
 
+app.get('/getProjectIdFromDeliverable', async (req, res) => {
+    const id = req.header("deliverableID")
+    try {
+        console.log(id)
+        let deliverable = await Deliverable.findOne({
+            where: {
+                deliverableID: id
+            }
+        })
+        if (deliverable) {
+            res.status(200).json(deliverable.projectID)
+        }
+        else {
+            res.status(404).json({ message: 'not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
+
 app.put('/deliverables/:id', async (req, res) => {
     try {
         let deliverable = await Deliverable.findByPk(req.params.id)
@@ -409,7 +431,7 @@ app.post('/login', async (req, res) => {
 
             const accessToken = sign({email: user.email}, "securedID");
             console.log(accessToken)
-            res.json({ token: accessToken, email: email, userID: user.userID});
+            res.json({ token: accessToken, email: email, userID: user.userID, account_type: user.account_type});
         }
         else if (user) {
             res.status(404).json({ msg: 'email and password do not match' })
@@ -575,7 +597,7 @@ app.get('/usersDeliverables', async (req, res) => {
 app.get('/evaluateProject', async (req, res) => {
     const id = req.header("deliverableID")
     try {
-        console.log(id)
+        // console.log(id)
         let deliverable = await Deliverable.findOne({
             where: {
                 deliverableID: id
@@ -614,5 +636,90 @@ app.post('/assignRandomEvaluator', async (req, res) => {
         res.status(500).json({ message: 'server error' })
     }
 });
+
+app.put('/updateGrade', async (req, res) => {
+    let data = req.body
+    // console.log(data)
+    try{
+            let grade = await Grades_history.findOne({
+                where: {
+                    deliverableID: data.deliverableID
+                }
+            })
+            console.log(grade);
+            if (grade) {
+                await grade.update({ grade: data.grade })
+                res.status(202).json({ message: 'accepted' })
+            }
+            else {
+                res.status(404).json({ message: 'deliverable not found' })
+            }
+        }catch(e){
+            console.error(e.message);
+    }
+
+})
+
+app.put('/updateProjectID', async (req, res) => {
+    let data = req.body
+    console.log(data)
+    try{
+            let grade = await Grades_history.findOne({
+                where: {
+                    deliverableID: data.deliverableID
+                }
+            })
+            console.log(grade);
+            if (grade) {
+                await grade.update({ projectID: data.projectToEvaluate })
+                res.status(202).json({ message: 'accepted' })
+            }
+            else {
+                res.status(404).json({ message: 'deliverable not found' })
+            }
+        }catch(e){
+            console.error(e.message);
+    }
+
+})
+
+app.get('/grades', async (req, res) => {
+    try {
+        let grades = await Grades_history.findAll()
+        res.status(200).json(grades)
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+});
+
+app.get('/gradesForProject', async (req, res) => {
+    const id = req.body.projectID
+    try {
+        console.log("id" + id)
+        let grades = await Grades_history.findAll({
+            where: {
+                projectID: id
+            }
+        })
+        if (grades) {
+            res.status(200).json(grades)
+        }
+        else {
+            res.status(404).json({ message: 'not found' })
+        }
+    }
+    catch (e) {
+        console.warn(e)
+        res.status(500).json({ message: 'server error' })
+    }
+})
+
+// myModel.findAll({
+//     attributes: [[sequelize.fn('DISTINCT', sequelize.col('col_name')), 'alias_name']],
+//     where:{}
+//   }).then(data => {})..
+
 
 app.listen(3001)
