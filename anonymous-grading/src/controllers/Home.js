@@ -24,7 +24,7 @@ function Home() {
   const [projectsChecked, setProjectsChecked] = useState(false);
   const [refresh, setRefresh] = useState(false);
 
-
+  //un axios call care verifica jwt-ul user-ului conectat. in cazul in care acesta nu este valid, user-ul nu va putea avea acces la tabele cu proiectele
   axios.get("http://localhost:3001/auth", {
     headers: {
       accessToken: localStorage.getItem("accessToken"),
@@ -38,25 +38,27 @@ function Home() {
       if (localStorage.getItem("account_type") == 'Teacher') {
         setIsStudent(false)
       }
-
     }
   });
 
+
   if (isStudent == false && projectsChecked == false) {
+     //in cazul in care  un profesor este conectat in aplicatie, atunci se va face un axios call pentru a prelua toate datele din tabela projects -> vizualizare nume + link catre repo
     axios.get("http://localhost:3001/projects").then((response) => {
       if (response.data.error) {
         console.log(response.data.error)
-      } else {
-        
+      } else {   
         setProjects(response.data)
         //console.log(projects)
         setProjectsChecked(true);
       }
     });
-
   }
 
+
+  //useEffect se foloseste atunci cand avem nevoie sa notificam aplicatia ca trebuie sa mai faca ceva dupa ce componenta isi face render
   useEffect(() => {
+    //in cazul in care  un profesor este conectat in aplicatie, atunci se va face un axios call pentru a prelua toate datele din tabela grades
     axios.get("http://localhost:3001/grades").then((response) => {
       if (response.data.error) {
         console.log(response.data.error)
@@ -68,16 +70,15 @@ function Home() {
 }, []);
 
 
-
-
   if (projectChecked == false && isStudent == true) {
+    //axios call pentru a gasi prin intermediul id-ului user-ului, inregistrarea din tabela User care-i corespunde, pentru ca mai apoi sa gaseasca proiectul din tabela
+    //Project pe baza projectID-ului din tabela USER, care este foreign key 
     axios.get("http://localhost:3001/user/project/:id", {
       headers: {
         userID: localStorage.getItem("userID")
       },
     }).then((response) => {
       if (response.data.error) {
-        //setprojectChecked(true);
         console.log(response.data.error)
       } else {
         //console.log(response.data);
@@ -85,14 +86,14 @@ function Home() {
         setprojectChecked(true);
         setProjectLink(response.data.link);
         setProjectName(response.data.name);
-
         localStorage.setItem("projectID", response.data.projectID)
       }
     });
-
   }
 
+
   if (hasProject && projectChecked == false && isStudent == true) {
+    //axios call pentru a gasi toti userii care au in coloana projectID, acelasi id ca user-ul curent
     axios.get("http://localhost:3001/teammates", {
       headers: {
         projectID: localStorage.getItem("projectID")
@@ -106,10 +107,11 @@ function Home() {
         setTeammate1(response.data[0])
         setTeammate2(response.data[1])
         setTeammate3(response.data[2])
-
       }
     });
 
+
+    //axios call pentru a preluea datele din db din tabela deliverable (partiale) in functie de projectID-ul user-ului
     axios.get("http://localhost:3001/usersDeliverables", {
       headers: {
         projectID: localStorage.getItem("projectID")
@@ -124,43 +126,38 @@ function Home() {
         if (response.data.length > 2) {
           setDeliverable3(response.data[2])
         }
-
       }
     });
-
-    // useEffect(() => {
-    //   if(!refresh){
-    //     window.location.reload(false);
-    //     setRefresh(true);
-    //   }
-    // })
-    //window.location.reload(false);
   }
+  
 
-
+//tabelele isi vor face loading in mod dinamic, in functie de numarul de elemente din array-uri
   return (
     <div className='homeContainer'>
-      {authState && isStudent && (
+      {authState && isStudent && (  //componente care-si fac render doar in cazul in care indeplinesc conditiile specificate
         <h2>You can start now to evaluate projects.</h2>
       )}
-      {!authState && (
+      {!authState && (  //componente care-si fac render doar in cazul in care indeplinesc conditiile specificate
         <>
           <h2>Welcome to Anonymous Grading!</h2>
           <img src={grader} alt="Grader" style={{ "height": "800px" }} />
           <h3>Please login first to access home page.</h3>
         </>
       )}
-      {!hasProject && authState && isStudent && (
+
+      {!hasProject && authState && isStudent && ( //componente care-si fac render doar in cazul in care indeplinesc conditiile specificate
         <>
           <h2>At the moment there are no projects assigned to you</h2>
           <img src={sadStudent} alt="Sad Student" style={{ "marginTop": "50px", "height": "1500px" }} />
         </>
       )}
-      {authState && !isStudent && projectsChecked && (
+
+      {authState && !isStudent && projectsChecked && ( //componente care-si fac render doar in cazul in care indeplinesc conditiile specificate
         <>
           <h3>Projects</h3>
           <div className="splitLeft left" style={{"height" :"800px"}}>
             <div>
+
               {projects.map((l) => (
                 <div className="container-table100">
                   <div className="wrap-table2">
@@ -193,7 +190,8 @@ function Home() {
                   </div>
                 </div>
               ))}
-              {grades.map((l) => (
+
+              {grades.map((l) => ( 
                 <div className="container-table100">
                   <div className="wrap-table2">
                     <div className="table">
@@ -207,7 +205,6 @@ function Home() {
                         <div className="cell2">
                           Project ID
                         </div>
-
                         <div className="row2">
                           <div className="cell2" data-title="First Name">
                             {l.grade}
@@ -221,12 +218,12 @@ function Home() {
                             {l.projectID}
                           </div>
                         </div>
-
                       </div>
                     </div>
                   </div>
                 </div>
               ))}
+
             </div>
           </div>
           <div className="splitRight right">
@@ -234,11 +231,11 @@ function Home() {
               <img src={happyStudents} alt="Avatar man" />
             </div>
           </div>
-
         </>
-      )
-      }
-      {hasProject && isStudent && (
+
+      )} 
+
+      {hasProject && isStudent && ( //componente care-si fac render doar in cazul in care indeplinesc conditiile specificate
         <>
           <h3>Your team's project</h3>
           <div className="splitLeft left">
@@ -269,7 +266,6 @@ function Home() {
                           {teammate1.email}
                         </div>
                       </div>
-
                       <div className="row">
                         <div className="cell" data-title="First Name">
                           {teammate2.first_name}
@@ -281,7 +277,6 @@ function Home() {
                           {teammate2.email}
                         </div>
                       </div>
-
                       <div className="row">
                         <div className="cell" data-title="First Name">
                           {teammate3.first_name}
@@ -315,7 +310,6 @@ function Home() {
                           {deliverable1.description}
                         </div>
                       </div>
-
                       <div className="row2">
                         <div className="cell2" data-title="First Name">
                           {deliverable2.ddl_date}
@@ -335,9 +329,9 @@ function Home() {
               <img src={happyStudents} alt="Avatar man" />
             </div>
           </div>
-
         </>
       )}
+
     </div>
   )
 }
