@@ -354,7 +354,7 @@ app.get('/deliverables/:id', async (req, res) => {
 app.get('/getProjectIdFromDeliverable', async (req, res) => {
     const id = req.header("deliverableID")
     try {
-        console.log(id)
+        console.log("id from getProject" + id)
         let deliverable = await Deliverable.findOne({
             where: {
                 deliverableID: id

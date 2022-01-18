@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import evaluate from '../assets/pictures/evaluate.png';
 import bell from '../assets/pictures/bell.png';
 import login from '../assets/pictures/login.png';
@@ -36,6 +36,7 @@ function Header() {
   const [deliverableDescription1, setDeliverableDescription1] = useState('');
   const [deliverableDescription2, setDeliverableDescription2] = useState('');
   const [deliverableDescription3, setDeliverableDescription3] = useState('');
+  const [isStudent, setIsStudent] = useState(true);
 
   const [projectID, setProjectID] = useState('');
 
@@ -90,6 +91,13 @@ function Header() {
     })
   }
 
+  useEffect(() => {
+    if (localStorage.getItem("account_type") === 'Student') {
+      setIsStudent(true);
+    } else {
+      setIsStudent(false);
+    }
+  })
 
   const handleDeliverableClose = () => {
     setOpenDeliverableDialog(false);
@@ -168,40 +176,29 @@ function Header() {
 
 
   const onOpenPopover = () => {
-    const userID = localStorage.getItem("userID")
-    const randomNumber = Math.floor(Math.random() * (11 - 6) + 6);
-    const grades = {
-      grade: null,
-      deliverableID: randomNumber,
-      userID: userID,
-      userUserID: userID,
-      deliverableDeliverableID: randomNumber
-    }
-
-    console.log(grades);
-
-    axios.post('http://localhost:3001/assignRandomEvaluator', grades).then(res => {
-      console.log(res);
-      localStorage.setItem("deliverableID", res.data.deliverableID);
-      setDeliverableID(res.data.deliverableID);
-    }).catch(err => {
-      console.log(err)
-    });
-
-    axios.get("http://localhost:3001/getProjectIdFromDeliverable", {
-      headers: {
-        deliverableID: localStorage.getItem("deliverableID"),
-      },
-    }).then((response) => {
-      if (response.data.error) {
-        console.log(false)
-      } else {
-        localStorage.setItem("projectToEvaluate", response.data.projectID)
+    if (isStudent) {
+      const userID = localStorage.getItem("userID")
+      const randomNumber = Math.floor(Math.random() * (11 - 6) + 6);
+      const grades = {
+        grade: null,
+        deliverableID: randomNumber,
+        userID: userID,
+        userUserID: userID,
+        deliverableDeliverableID: randomNumber
       }
-    });
 
+      console.log(grades);
 
-    setOpenPopover(true);
+      axios.post('http://localhost:3001/assignRandomEvaluator', grades).then(res => {
+        console.log(res);
+        localStorage.setItem("deliverableID", res.data.deliverableID);
+        setDeliverableID(res.data.deliverableID);
+      }).catch(err => {
+        console.log(err)
+      });
+
+      setOpenPopover(true);
+    }
   }
 
   const onPopoverSelect = () => {

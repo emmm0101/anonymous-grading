@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import axios from 'axios';
 import happyStudents from '../assets/pictures/happyStudents.png';
 import evaluate2 from '../assets/pictures/evaluate2.png';
@@ -28,12 +28,41 @@ function EvaluateProject(){
       5: '10',
     };
 
-    const data = {
-      deliverableID: localStorage.getItem("deliverableID"),
-      grade: value
-    }
 
+
+    useEffect(() => {
+      axios.get("http://localhost:3001/getProjectIdFromDeliverable", {
+        headers: {
+          deliverableID: localStorage.getItem("deliverableID"),
+        },
+      }).then((response) => {
+        if (response.data.error) {
+          console.log(false)
+        } else {
+          console.log(response.data)
+          localStorage.setItem("projectToEvaluate", response.data)
+        }
+      });
+
+      const data2 = {
+        projectToEvaluate: localStorage.getItem("projectToEvaluate"),
+        deliverableID: localStorage.getItem("deliverableID")
+      }
+
+      console.log(data2)
+      axios.put("http://localhost:3001/updateProjectID", data2).then((response) => {
+        if (response.data.error) {
+          console.log(false)
+        } else {
+          console.log(response.data)
+        }
+      });
+    })
     const sendGrade = () => {
+      const data = {
+        deliverableID: localStorage.getItem("deliverableID"),
+        grade: value
+      }
       axios.put("http://localhost:3001/updateGrade", data).then((response) => {
         if (response.data.error) {
           console.log(response.data.error)
@@ -41,20 +70,6 @@ function EvaluateProject(){
           console.log(response.data)
         }
       });
-
-        const data2 = {
-          projectToEvaluate: localStorage.getItem("projectToEvaluate"),
-          deliverableID: localStorage.getItem("deliverableID")
-        }
-
-        console.log(data2)
-        axios.put("http://localhost:3001/updateProjectID", data2).then((response) => {
-          if (response.data.error) {
-            console.log(false)
-          } else {
-            console.log(response.data)
-          }
-        });
     }
 
 
@@ -116,7 +131,17 @@ function EvaluateProject(){
         precision={0.5}
         onChange={(event, newValue) => {
           setValue(newValue);
-          sendGrade()
+          const data = {
+            deliverableID: localStorage.getItem("deliverableID"),
+            grade: newValue
+          }
+          axios.put("http://localhost:3001/updateGrade", data).then((response) => {
+            if (response.data.error) {
+              console.log(response.data.error)
+            } else {
+              console.log(response.data)
+            }
+          });
         }}
         onChangeActive={(event, newHover) => {
           setHover(newHover);

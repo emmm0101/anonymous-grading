@@ -3,7 +3,6 @@ import axios from 'axios';
 import grader from '../assets/pictures/grader.jpg'
 import sadStudent from '../assets/pictures/sadStudent.png'
 import happyStudents from '../assets/pictures/happyStudents.png'
-import _ from 'lodash'
 
 
 function Home() {
@@ -21,10 +20,9 @@ function Home() {
   const [projectChecked, setprojectChecked] = useState(false);
   const [isStudent, setIsStudent] = useState(true);
   const [projects, setProjects] = useState('');
-  const [deliverables, setDeliverables] = useState('');
   const [grades, setGrades] = useState('');
   const [projectsChecked, setProjectsChecked] = useState(false);
-
+  const [refresh, setRefresh] = useState(false);
 
 
   axios.get("http://localhost:3001/auth", {
@@ -68,18 +66,6 @@ function Home() {
       }
     });  
 }, []);
-  // axios.get("http://localhost:3001/deliverables").then((response) => {
-  //   if (response.data.error) {
-  //     console.log(response.data.error)
-  //   } else {
-  //     //console.log(response.data)
-  //     setDeliverables(response.data)
-  //     console.log(deliverables)
-  //   }
-  // });
-
-
-
 
 
 
@@ -142,6 +128,13 @@ function Home() {
       }
     });
 
+    // useEffect(() => {
+    //   if(!refresh){
+    //     window.location.reload(false);
+    //     setRefresh(true);
+    //   }
+    // })
+    //window.location.reload(false);
   }
 
 
@@ -206,7 +199,7 @@ function Home() {
                     <div className="table">
                       <div className="row2 header2">
                         <div className="cell2">
-                          Grade
+                          Grade between 0-5
                         </div>
                         <div className="cell2">
                           Deliverable ID
