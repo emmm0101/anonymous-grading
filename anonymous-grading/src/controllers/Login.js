@@ -38,14 +38,14 @@ function Login() {
     <div className="login-register-wrapper">
       <div className="nav-buttons">
         <animated.button
-          onClick={loginClicked}
+          onClick={loginClicked} //se va afisa formulare de login
           id="loginBtn"
           style={loginBtnProps}
         >
           Login
         </animated.button>
         <animated.button
-          onClick={registerClicked}
+          onClick={registerClicked} //se va afisa formulare de login
           id="registerBtn"
           style={registerBtnProps}
         >
@@ -60,9 +60,6 @@ function Login() {
           <RegisterForm />
         </animated.form>
       </div>
-      {/* <animated.div className="forgot-panel" style={loginProps}>
-        <a herf="#">Forgot your password</a>
-      </animated.div> */}
     </div>
     </div>
   );
@@ -81,6 +78,7 @@ function LoginForm() {
       password: password
     }
 
+    //request de verificare a user-ului in baza de date, in caz afirmativ, se vor salva in localStorage datele ce vor fi utilizate pentru alte request-uri in alte functii
     Axios.post('http://localhost:3001/login', data).then(res => {
       console.log(res);
       localStorage.setItem("accessToken", res.data.token);
@@ -91,10 +89,9 @@ function LoginForm() {
     }).catch(err => {
       console.log(err)
     })
-
-
-
   }
+
+
   return (
     <React.Fragment>
       <label htmlFor="username">EMAIL</label>
@@ -128,10 +125,11 @@ function RegisterForm() {
       password: passwordReg
     }
     console.log('submitButton')
+    //axios call pentru a adauga o noua inregistrare in baza de date, in tabela user. in cazul in care record ul a fost adaugat cu succes, 
+    //user-ul va fi redirectionat catre pagina de login(formularul de login)
     Axios.post('http://localhost:3001/registration', data).then((response) => {
       console.log(response)
       history.push('/login');
-      
       console.log('Registration' + response)
     }).catch(err => console.log(err))
   }
@@ -139,7 +137,6 @@ function RegisterForm() {
 
   return (
     <React.Fragment>
-
       <label htmlFor="firstName">first name</label>
       <input type="text" id="firstname" onChange={(e) => {
         setfirstnameReg(e.target.value);

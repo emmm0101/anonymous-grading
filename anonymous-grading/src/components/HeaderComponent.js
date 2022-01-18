@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import evaluate from '../assets/pictures/evaluate.png';
 import bell from '../assets/pictures/bell.png';
 import login from '../assets/pictures/login.png';
@@ -36,9 +36,10 @@ function Header() {
   const [deliverableDescription1, setDeliverableDescription1] = useState('');
   const [deliverableDescription2, setDeliverableDescription2] = useState('');
   const [deliverableDescription3, setDeliverableDescription3] = useState('');
-
+  const [isStudent, setIsStudent] = useState(true);
   const [projectID, setProjectID] = useState('');
 
+  //un axios call care verifica jwt-ul user-ului conectat. in cazul in care acesta nu este valid, user-ul nu va putea avea acces la tabele cu proiectele
   axios.get("http://localhost:3001/auth", {
     headers: {
       accessToken: localStorage.getItem("accessToken"),
@@ -52,8 +53,9 @@ function Header() {
     }
   });
 
-  const randomNumber = Math.floor(Math.random() * (11 - 6) + 6)
+
   let history = useHistory();
+  //functia care se apeleaza in momentul in care user-ul da click pe butonul de Logout, stergandu-se toate datele salvate pe parcurs in localStorage
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userID");
@@ -62,7 +64,6 @@ function Header() {
     localStorage.removeItem("account_type");
     localStorage.removeItem("projectToEvaluate");
     localStorage.removeItem("deliverableID");
-
     setAuthState(false);
     history.push('/login');
   }
@@ -71,11 +72,13 @@ function Header() {
   const [openTeamDialog, setOpenTeamDialog] = React.useState(false);
   const [openDeliverableDialog, setOpenDeliverableDialog] = React.useState(false);
 
+
   const handleRegisterProject = () => {
     const data = {
       name: projectName,
       link: projectRepo
     }
+    //axios call pentru a puta face insert in tabela project cu noile date necesare
     axios.post('http://localhost:3001/registerProject', data).then(res => {
       if (res.status == 201) {
         console.log(res.data)
@@ -91,22 +94,40 @@ function Header() {
   }
 
 
+  //use effect -> pentru a verifica daca s-a conectat un profesor sau un student, dupa ce aplicatia isi face render
+  useEffect(() => {
+    if (localStorage.getItem("account_type") === 'Student') {
+      setIsStudent(true);
+    } else {
+      setIsStudent(false);
+    }
+  })
+
+  //inchide dialogul de inregistrat partialele(deliverables)
   const handleDeliverableClose = () => {
     setOpenDeliverableDialog(false);
   }
 
+
+  //deschide dialogul de inregistrat un proiect
   const handleClickOpen = () => {
     setOpen(true);
   };
 
+
+   //inchide dialogul de inregistrat un proiect
   const handleClose = () => {
     setOpen(false);
   };
 
+
+ //inchide dialogul de inregistrat colegii cu care se realizeaza proiectul -> se face update in tabela user, actualizandu-se projectID-ul la fiecare dintre acestia
   const handleAddTeammatesClose = () => {
     setOpenTeamDialog(false);
   }
 
+
+   //deschide dialogul de inregistrat colegii cu care se realizeaza proiectul -> se face update in tabela user, actualizandu-se projectID-ul la fiecare dintre acestia
   const handleAddTeammates = () => {
     const data = {
       projectID: projectID,
@@ -129,6 +150,8 @@ function Header() {
     })
   }
 
+
+  //deschide dialogul de inregistrat partialele proiectului -> se face insert in tabela deliverable
   const handleAddDeliverable = () => {
     let deliverables = [];
     const deliverable1 = {
@@ -150,6 +173,7 @@ function Header() {
     }
     deliverables.push(deliverable3);
     console.log(deliverables)
+    //axios call catre backend cu datele preluate din input-uri
     axios.post("http://localhost:3001/registerDeliverables", deliverables).then(res => {
       if (res.status == 201) {
         console.log(res.data)
@@ -160,54 +184,46 @@ function Header() {
     }).catch(err => {
       console.log(err)
     })
-
   }
+
+
   const [pos, setPos] = useState('top')
   const [openPopover, setOpenPopover] = useState(false);
   const [deliverableID, setDeliverableID] = useState(false);
 
 
+  //deschide popover-ul care redirectioneaza catre pagina de evaluare, generandu-se random un numar sa fie asginat sa evalueze(in cazul in care este student)
   const onOpenPopover = () => {
-    const userID = localStorage.getItem("userID")
-    const randomNumber = Math.floor(Math.random() * (11 - 6) + 6);
-    const grades = {
-      grade: null,
-      deliverableID: randomNumber,
-      userID: userID,
-      userUserID: userID,
-      deliverableDeliverableID: randomNumber
-    }
-
-    console.log(grades);
-
-    axios.post('http://localhost:3001/assignRandomEvaluator', grades).then(res => {
-      console.log(res);
-      localStorage.setItem("deliverableID", res.data.deliverableID);
-      setDeliverableID(res.data.deliverableID);
-    }).catch(err => {
-      console.log(err)
-    });
-
-    axios.get("http://localhost:3001/getProjectIdFromDeliverable", {
-      headers: {
-        deliverableID: localStorage.getItem("deliverableID"),
-      },
-    }).then((response) => {
-      if (response.data.error) {
-        console.log(false)
-      } else {
-        localStorage.setItem("projectToEvaluate", response.data.projectID)
+    if (isStudent) {
+      const userID = localStorage.getItem("userID")
+      const randomNumber = Math.floor(Math.random() * (11 - 6) + 6);
+      const grades = {
+        grade: null,
+        deliverableID: randomNumber,
+        userID: userID,
+        userUserID: userID,
+        deliverableDeliverableID: randomNumber
       }
-    });
 
+      console.log(grades);
 
-    setOpenPopover(true);
+      axios.post('http://localhost:3001/assignRandomEvaluator', grades).then(res => {
+        console.log(res);
+        localStorage.setItem("deliverableID", res.data.deliverableID);
+        setDeliverableID(res.data.deliverableID);
+      }).catch(err => {
+        console.log(err)
+      });
+      setOpenPopover(true);
+    }
   }
 
+  //buton care triggaruieste redirectionarea catre pagina de evaluare
   const onPopoverSelect = () => {
     setOpenPopover(false);
     history.push('/evaluateProject');
   }
+
 
   const [selectedIndex, setSelectedIndex] = React.useState(1);
 
@@ -215,6 +231,8 @@ function Header() {
     setSelectedIndex(index);
   };
 
+
+  //componente din header
   return (
     <div style={{ "backgroundColor": "#FCD8D4", "width": "100%", "height": "60px" }}>
       <nav className="Nav" style={{ "display": "grid" }}>
@@ -249,7 +267,6 @@ function Header() {
             </Link>
             <Button type="submit" onClick={() => onPopoverSelect()} style={{ "color": "black" }}>
               <label style={{ "color": "black", "fontSize": "12px" }}>Close</label></Button>
-
           </Popover.Content>
         </Popover>
         <button className="NavButton" onClick={() => handleClickOpen()}>

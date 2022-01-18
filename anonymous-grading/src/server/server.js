@@ -87,44 +87,13 @@ async function checkIfExists() {
     }
 }
 
-//checkIfExists();
-
-//{
-    // async function dropTables(){
-    //     try{
-    //         await grades_history.drop();
-    //         await deliverable.drop();
-    //         await user_backup.drop();}
-    //     catch(error){
-    //         console.error(error.message)
-    //     }
-//}
-
-//dropTables();
-
-//{//select using QueryTypes
-    // sequelize.query("SELECT * FROM `user`", { type: sequelize.QueryTypes.SELECT})
-    //   .then(function(user) {
-    //     console.log(user)
-    //   })
-//}
-
-//{
-    //show tables
-    // sequelize.getQueryInterface().showAllSchemas().then((tableObj) => {
-    //     console.log('// Tables in database', '==========================');
-    //     console.log(tableObj);
-    // }).catch((err) => {
-    //     console.log('showAllSchemas ERROR', err);
-    // })
-//}
 
 const app = express()
-// app.use(express.static(path.join(_dirname, 'public')))
 app.use(cors()) //node module for allowing data transfer from frontend to backend
 app.use(express.json());
 
-//user
+
+//user -> select all from user -> returneaza toate inregistrarile din tabela user
 app.get('/users', async (req, res) => {
     console.time('time')
     try {
@@ -140,6 +109,8 @@ app.get('/users', async (req, res) => {
     console.timeEnd('time')
 });
 
+
+//insert in tabela user -> in functie de email se va verifica daca se creeaza cont de student sau de profesor
 app.post('/registration', async (req, res) => {
     try {
         let account_type = req.body.email.split('@')
@@ -163,10 +134,10 @@ app.post('/registration', async (req, res) => {
 })
 
 
+// select from user where id = `${id}` => gaseste user ul pe baza primary key-ului
 app.get('/users/:id', async (req, res) => {
     try {
         let user = await User.findByPk(req.params.id)
-        // let getUser = user.findOne({ where: {userID: 3} })
         if (user) {
             res.status(200).json(user)
         }
@@ -180,6 +151,8 @@ app.get('/users/:id', async (req, res) => {
     }
 })
 
+
+//select from user where id = `${id}` => gaseste user ul pe baza primary key-ului pentru a-i putea face update cu datele primite
 app.put('/users/:id', async (req, res) => {
     try {
         let user = await User.findByPk(req.params.id)
@@ -198,6 +171,7 @@ app.put('/users/:id', async (req, res) => {
 })
 
 
+//sterge inregistrarea din tabela user care are primary key-ul = valoarea primita in request
 app.delete('/users/:id', async (req, res) => {
     try {
         let user = await User.findByPk(req.params.id)
@@ -217,7 +191,9 @@ app.delete('/users/:id', async (req, res) => {
     }
 })
 
+
 //project
+//select * prom projects -> intoarce toate inregistrarile din tabela
 app.get('/projects', async (req, res) => {
     try {
         let projects = await Project.findAll({
@@ -230,6 +206,8 @@ app.get('/projects', async (req, res) => {
     }
 });
 
+
+//creeaza multiple inregistrari pe baza datelor primite in request
 app.post('/projects', async (req, res) => {
     try {
         if (req.query.bulk && req.query.bulk == 'on') {
@@ -248,10 +226,10 @@ app.post('/projects', async (req, res) => {
 })
 
 
-app.get('/projects/:id', validateToken, async (req, res) => {
+//realizeaza un select in tabela project unde id-l este egal cu id-ul trimis ca parametru in request
+app.get('/projects/:id', async (req, res) => {
     try {
         let project = await Project.findByPk(req.params.id)
-        // let getUser = user.findOne({ where: {userID: 3} })
         if (project) {
             res.status(200).json(project)
         }
@@ -265,6 +243,8 @@ app.get('/projects/:id', validateToken, async (req, res) => {
     }
 })
 
+
+//realizeaza un select in tabela project unde id-l este egal cu id-ul trimis ca parametru in request, pentru ca  apoi sa faca update inregistrarii cu restul datelor trimise tot ca parametru
 app.put('/projects/:id', async (req, res) => {
     try {
         let project = await Project.findByPk(req.params.id)
@@ -282,6 +262,8 @@ app.put('/projects/:id', async (req, res) => {
     }
 })
 
+
+//sterge inregistrarea din tabela project pe baza primary key-ului
 app.delete('/projects/:id', async (req, res) => {
     try {
         let project = await Project.findByPk(req.params.id)
@@ -301,6 +283,7 @@ app.delete('/projects/:id', async (req, res) => {
 })
 
 //deliverable
+//select * from deliverables -> intoarce toate inreg din deliverables(partialele)
 app.get('/deliverables', async (req, res) => {
     try {
         let deliverables = await Deliverable.findAll()
@@ -312,6 +295,7 @@ app.get('/deliverables', async (req, res) => {
     }
 });
 
+//creeaza multiple inregistrari pe baza datelor primite in request
 app.post('/deliverables', async (req, res) => {
     try {
         if (req.query.bulk && req.query.bulk == 'on') {
@@ -329,6 +313,8 @@ app.post('/deliverables', async (req, res) => {
     }
 })
 
+
+//realizeaza un select in tabela deliverables unde id-l este egal cu id-ul trimis ca parametru in request
 app.get('/deliverables/:id', async (req, res) => {
     const id = req.header("deliverableID")
     try {
@@ -351,10 +337,12 @@ app.get('/deliverables/:id', async (req, res) => {
     }
 })
 
+
+//pe baza id-ului primit din header-ul request-ului, se gaseste partialul pentru a-i fi gasit orojectID-ul corespunzator
 app.get('/getProjectIdFromDeliverable', async (req, res) => {
     const id = req.header("deliverableID")
     try {
-        console.log(id)
+        console.log("id from getProject" + id)
         let deliverable = await Deliverable.findOne({
             where: {
                 deliverableID: id
@@ -373,6 +361,8 @@ app.get('/getProjectIdFromDeliverable', async (req, res) => {
     }
 })
 
+
+//realizeaza un select in tabela deliverables unde id-ul este egal cu id-ul trimis ca parametru in request, pentru ca  apoi sa se faca update inregistrarii cu restul datelor trimise tot ca parametru
 app.put('/deliverables/:id', async (req, res) => {
     try {
         let deliverable = await Deliverable.findByPk(req.params.id)
@@ -390,6 +380,8 @@ app.put('/deliverables/:id', async (req, res) => {
     }
 })
 
+
+//stergere inregistrare din tabela deliverables pe baza cheii
 app.delete('/deliverables/:id', async (req, res) => {
     try {
         let deliverable = await Deliverable.findByPk(req.params.id)
@@ -408,14 +400,9 @@ app.delete('/deliverables/:id', async (req, res) => {
     }
 })
 
-app.post('/register', async (req, res) => {
-    let first_name = req.body.first_name
-    let last_name = req.body.last_name
-    let email = req.body.email
-    let password = req.body.password
 
-})
-
+//cauta in baza de date user-ul care era email-ul la fel cu cel trimis in request, iar daca si parola corespunde, inseamna ca inregistrarea exista in baza de date, deci este un user
+//valid. Prin urmare, prin metoda sign din jwt se semneaza token-ul care va fi retinut in frontend, in localStorage, pentru a autoriza user-ul.
 app.post('/login', async (req, res) => {
     try {
         let email = req.body.email
@@ -448,11 +435,14 @@ app.post('/login', async (req, res) => {
 })
 
 
+//cu ajutorul metodei validateToken din AuthMiddleware, se va face verificarea token-ului pentru a determina daca user-ul poate accesa sau nu functionalitatile
 app.get("/auth", validateToken, (req, res) => {
     res.json('user has been authentificated');
    //console.log(req.user)
   });
 
+
+//creeaza o inregistrare in tabela project cu datele trimise in request
 app.post('/registerProject', async (req, res) => {
     try {
        const project = await Project.create(req.body)
@@ -465,6 +455,9 @@ app.post('/registerProject', async (req, res) => {
     }
 })
 
+
+//pe baza datelor trimise in body-ul request-ului, se identifica userii care vor avea acelasi proiect si se va face update pe coloana projectID, cu id-ul corespunzator proiectului,
+//trimis tot in body0ul request-ului ca prim parametru
 app.put('/users/project/:projectID', async (req, res) => {
     let data = req.body
     console.log(data)
@@ -523,6 +516,8 @@ app.put('/users/project/:projectID', async (req, res) => {
     }
 })
 
+
+//pentru fiecare element trimis ca parametru in body, se va face un insert in tabela deliverables cu datele acestora
 app.post('/registerDeliverables', async (req, res) => {
     let deliverables = req.body;
     try
@@ -538,6 +533,9 @@ app.post('/registerDeliverables', async (req, res) => {
     }
 })
 
+
+//pe baza id-ul din header-ul request-ului, se va cauta prima data user-ul care are acelasi id cu cel primit pentru a putea prelua project id-ul din coloana projectID, din
+//tabela user, ca mai apoi sa se faca un select prin care preluam proiectul efectiv pentru a putea fi trimis catre frontend
 app.get('/user/project/:id', async (req, res) => {
     const id = req.header("userID")
     try {
@@ -566,6 +564,8 @@ app.get('/user/project/:id', async (req, res) => {
     }
 })
 
+
+//cauta in tabela user toti studentii care au la projectID acelasi id ca cel primit in header-ul request-ului
 app.get('/teammates', async (req, res) => {
     const id = req.header("projectID")
     try {
@@ -580,6 +580,9 @@ app.get('/teammates', async (req, res) => {
     }
 });
 
+
+//pe baza projectID-ului primit in header-ul request-ului, se vor identifica deliverables(partialele) corespunzatoare projectID-ului pentru a putea fi trimise inapoi
+//catre frontend
 app.get('/usersDeliverables', async (req, res) => {
     const id = req.header("projectID")
     try {
@@ -594,6 +597,9 @@ app.get('/usersDeliverables', async (req, res) => {
     }
 });
 
+
+//pe bazaid-ului din header-ul request-ului, se identifica partialul,urmand ca prin acesta sa identificam proiectul din care face parte partialul respectiv
+//aceste request-uri sunt necesare pentru a avea acces la numele proiectului, link-ul catre repository, deadline-ul partialului, dar si descrierea acestuia
 app.get('/evaluateProject', async (req, res) => {
     const id = req.header("deliverableID")
     try {
@@ -624,6 +630,8 @@ app.get('/evaluateProject', async (req, res) => {
     }
 })
 
+
+//reuqest de insert in tabela grades_history, prin care se asigneaza un student random sa evalueze partialul respectiv
 app.post('/assignRandomEvaluator', async (req, res) => {
     try {
         console.log(req.body)
@@ -637,6 +645,8 @@ app.post('/assignRandomEvaluator', async (req, res) => {
     }
 });
 
+
+//request pentru a face update pe coloana grade din tabela grades_history cu nota trimisa de catre utilizator
 app.put('/updateGrade', async (req, res) => {
     let data = req.body
     // console.log(data)
@@ -657,9 +667,10 @@ app.put('/updateGrade', async (req, res) => {
         }catch(e){
             console.error(e.message);
     }
-
 })
 
+
+//request pentru a face update pe coloana projectID din tabela grades_history cu projectID-ul preluat din body-ul request-ului (id preluand din frontend din localStorage)
 app.put('/updateProjectID', async (req, res) => {
     let data = req.body
     console.log(data)
@@ -683,6 +694,8 @@ app.put('/updateProjectID', async (req, res) => {
 
 })
 
+
+//select * from grades_history -> returneaza toate inregistrarile din tabela grades_history
 app.get('/grades', async (req, res) => {
     try {
         let grades = await Grades_history.findAll()
@@ -694,6 +707,8 @@ app.get('/grades', async (req, res) => {
     }
 });
 
+
+//request  de preluare a tuturor notelor pe baza id-ului proiectului
 app.get('/gradesForProject', async (req, res) => {
     const id = req.body.projectID
     try {
@@ -716,10 +731,6 @@ app.get('/gradesForProject', async (req, res) => {
     }
 })
 
-// myModel.findAll({
-//     attributes: [[sequelize.fn('DISTINCT', sequelize.col('col_name')), 'alias_name']],
-//     where:{}
-//   }).then(data => {})..
 
 
 app.listen(3001)
